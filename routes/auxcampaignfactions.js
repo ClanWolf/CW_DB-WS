@@ -44,7 +44,7 @@ router.get("/:id", async (req, res) => {
 
   try {
     const campaignFactions = await db.pool.query(
-      `SELECT ac.*, c.Name_en, c.Name_de FROM ${TABLE_NAME} ac LEFT JOIN c3_FACTION c ON (ac.faction_id = c.ID) WHERE ac.campaign_id = ?`,
+      `SELECT ac.*, c.Name_en, c.Name_de, c.Logo FROM ${TABLE_NAME} ac LEFT JOIN c3_FACTION c ON (ac.faction_id = c.ID) WHERE ac.campaign_id = ?`,
       [req.params.id]
     );
 
