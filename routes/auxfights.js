@@ -56,10 +56,24 @@ router.get("/:id", async (req, res) => {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
   try {
-    const fights = await db.pool.query(
-      `SELECT * FROM aux_fights af LEFT JOIN aux_fightusers au ON af.id_fight = au.fight_id WHERE (af.confirmed = 0 OR (af.winnerfaction_id IS NOT NULL AND af.winnerfaction_id > 0) AND au.user_id = ? LIMIT 1`,
-      [req.params.id]
-    );
+   const fights = await db.pool.query(
+    `
+      SELECT *
+      FROM aux_fights af
+      LEFT JOIN aux_fightusers au
+        ON af.id_fight = au.fight_id
+      WHERE (
+        af.confirmed = 0
+        OR (
+          af.winnerfaction_id IS NOT NULL
+          AND af.winnerfaction_id > 0
+        )
+      )
+      AND au.user_id = ?
+      LIMIT 1
+    `,
+    [req.params.id]
+  );
 
     logger.info(
       "Auxfight record with id " + req.params.id + " requested from ip: " + ip
