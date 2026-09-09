@@ -8,7 +8,8 @@ class AuxCampaignFaction {
       name: {
         de: data.Name_de,
         en: data.Name_en
-      }
+      },
+      logo: data.Logo
     };
     this.updated = data.updated;
   }
