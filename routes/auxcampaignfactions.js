@@ -38,12 +38,13 @@ router.get("/", async (req, res) => {
   }
 });
 
+// seletiert alle factions anhand der campaign id
 router.get("/:id", async (req, res) => {
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
   try {
     const campaignFactions = await db.pool.query(
-      `SELECT * FROM ${TABLE_NAME} WHERE \`${PRIMARY_KEY_COLUMN}\` = ? LIMIT 1`,
+      `SELECT ac.*, c.Name_en, c.Name_de FROM ${TABLE_NAME} ac LEFT JOIN c3_FACTION c ON (ac.faction_id = c.ID) WHERE ac.faction_id = ?`,
       [req.params.id]
     );
 
@@ -52,7 +53,7 @@ router.get("/:id", async (req, res) => {
     );
 
     campaignFactions.length > 0
-      ? res.status(200).json(new AuxCampaignFaction(campaignFactions[0]))
+      ? res.status(200).json(campaignFactions.map((cf) => new AuxCampaignFaction(cf)))
       : res.sendStatus(404);
   } catch (err) {
     logger.error("Failed to load auxcampaignfaction record: " + err.message);
