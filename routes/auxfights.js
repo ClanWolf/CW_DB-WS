@@ -226,7 +226,7 @@ router.post("/", async (req, res) => {
     logger.error("Failed to create auxfight: " + err.message);
 
     return res.status(500).json({
-      message: "Server error",
+      message: err.message,
     });
   } finally {
     if (connection) {
