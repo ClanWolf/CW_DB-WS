@@ -129,7 +129,7 @@ router.post("/", async (req, res) => {
     // Create fight
     // ---------------------------------------------------------
 
-    const [fightResult] = await connection.query(
+    const fightResult = await connection.query(
       `
         INSERT INTO aux_fights (
           fight_name,
