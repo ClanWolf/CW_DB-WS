@@ -7,6 +7,7 @@ class AuxFight {
     this.campaign_id = data.campaign_id;
     this.c3_attack_id = data.c3_attack_id;
     this.winnerfaction_id = data.winnerfaction_id;
+    this.fightcreator = data.fightcreator;
     this.updated = data.updated;
   }
 }
