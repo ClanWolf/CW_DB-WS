@@ -43,7 +43,7 @@ router.get("/:id", async (req, res) => {
 
   try {
     const fights = await db.pool.query(
-      `SELECT * FROM aux_fights af LEFT JOIN aux_fightusers au ON af.id_fight = au.fight_id WHERE (af.confirmed = 0 OR af.winnerfaction_id NOT NULL) AND au.user_id = ? LIMIT 1`,
+      `SELECT * FROM aux_fights af LEFT JOIN aux_fightusers au ON af.id_fight = au.fight_id WHERE (af.confirmed = 0 OR af.winnerfaction_id IS NOT NULL) AND au.user_id = ? LIMIT 1`,
       [req.params.id]
     );
 
