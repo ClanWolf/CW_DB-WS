@@ -134,7 +134,7 @@ router.post("/", async (req, res) => {
         INSERT INTO aux_fights (
           fight_name,
           confirmed,
-          campaign_id,
+          capmaign_id,
           winnerfaction_id
         )
         VALUES (?, 0, ?, NULL)
