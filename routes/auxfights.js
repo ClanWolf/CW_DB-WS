@@ -234,4 +234,145 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.patch("/:id/cancel", async (req, res) => {
+  const ip =
+    req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
+
+  const fightId = req.params.id;
+
+  try {
+    const result = await db.pool.query(
+      `
+        UPDATE aux_fights
+        SET
+          winnerfaction_id = -1,
+          confirmed = 1
+        WHERE id_fight = ?
+      `,
+      [fightId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Auxfight not found",
+      });
+    }
+
+    logger.info(
+      `Auxfight ${fightId} cancelled from ip: ${ip}`
+    );
+
+    return res.status(200).json({
+      id_fight: fightId,
+      winnerfaction_id: -1,
+      confirmed: 1,
+      cancelled: true,
+    });
+  } catch (err) {
+    logger.error(
+      "Failed to cancel auxfight: " + err.message
+    );
+
+    return res.status(500).json({
+      message: err.message,
+    });
+  }
+});
+
+router.patch("/:id/confirmed", async (req, res) => {
+  const ip =
+    req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
+
+  const fightId = req.params.id;
+  const { confirmed } = req.body || {};
+
+  try {
+    if (confirmed !== 0 && confirmed !== 1) {
+      return res.status(400).json({
+        message: "confirmed must be either 0 or 1",
+      });
+    }
+
+    const result = await db.pool.query(
+      `
+        UPDATE aux_fights
+        SET confirmed = ?
+        WHERE id_fight = ?
+      `,
+      [confirmed, fightId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Auxfight not found",
+      });
+    }
+
+    logger.info(
+      `Confirmed for auxfight ${fightId} updated to ${confirmed} from ip: ${ip}`
+    );
+
+    return res.status(200).json({
+      id_fight: fightId,
+      confirmed,
+    });
+  } catch (err) {
+    logger.error(
+      "Failed to update auxfight confirmation: " + err.message
+    );
+
+    return res.status(500).json({
+      message: err.message,
+    });
+  }
+});
+
+router.patch("/:id/winner", async (req, res) => {
+  const ip =
+    req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
+
+  const fightId = req.params.id;
+  const { winnerfaction_id } = req.body || {};
+
+  try {
+    if (!Number.isInteger(winnerfaction_id)) {
+      return res.status(400).json({
+        message: "winnerfaction_id must be an integer",
+      });
+    }
+
+    const result = await db.pool.query(
+      `
+        UPDATE aux_fights
+        SET winnerfaction_id = ?
+        WHERE id_fight = ?
+      `,
+      [winnerfaction_id, fightId]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Auxfight not found",
+      });
+    }
+
+    logger.info(
+      `Winner faction for auxfight ${fightId} updated to ${winnerfaction_id} from ip: ${ip}`
+    );
+
+    return res.status(200).json({
+      id_fight: fightId,
+      winnerfaction_id,
+    });
+  } catch (err) {
+    logger.error(
+      "Failed to update auxfight winner faction: " + err.message
+    );
+
+    return res.status(500).json({
+      message: err.message,
+    });
+  }
+});
+
 module.exports = router;
