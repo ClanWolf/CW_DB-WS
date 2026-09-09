@@ -6,7 +6,7 @@ const express = require("express");
 const router = express.Router();
 
 const TABLE_NAME = "aux_fights";
-const PRIMARY_KEY_COLUMN = "aux_fight_id";
+const PRIMARY_KEY_COLUMN = "id_fight";
 
 function serializeInsertResult(result) {
   return {
@@ -61,52 +61,175 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
-  const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
-  const payload = req.body || {};
+  const ip =
+    req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
+
+  const {
+    initiator_user_id,
+    initiator_faction_id,
+    opponent_user_id,
+    opponent_faction_id,
+    campaign_id = null,
+    fight_name = "fight",
+  } = req.body || {};
+
+  let connection;
 
   try {
-    if (Array.isArray(payload) || typeof payload !== "object") {
-      return res.status(400).json({ message: "Request body must be an object" });
-    }
+    // ---------------------------------------------------------
+    // Validation
+    // ---------------------------------------------------------
 
-    const writableColumns = await getWritableColumns();
-    const requestColumns = Object.keys(payload);
-    const unknownColumns = requestColumns.filter(
-      (key) => !writableColumns.includes(key)
-    );
-
-    if (unknownColumns.length > 0) {
+    if (
+      !Number.isInteger(initiator_user_id) ||
+      !Number.isInteger(opponent_user_id)
+    ) {
       return res.status(400).json({
-        message: "Unknown or read-only auxfight fields provided",
-        fields: unknownColumns,
+        message: "initiator_user_id and opponent_user_id are required",
       });
     }
 
-    const payloadColumns = requestColumns.filter((key) =>
-      writableColumns.includes(key)
-    );
-
-    if (payloadColumns.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "No valid auxfight fields provided" });
+    if (initiator_user_id === opponent_user_id) {
+      return res.status(400).json({
+        message: "Initiator and opponent must be different users",
+      });
     }
 
-    const columns = payloadColumns.map((column) => `\`${column}\``).join(", ");
-    const placeholders = payloadColumns.map(() => "?").join(", ");
-    const values = payloadColumns.map((column) => payload[column]);
+    if (
+      !Number.isInteger(initiator_faction_id) ||
+      !Number.isInteger(opponent_faction_id)
+    ) {
+      return res.status(400).json({
+        message:
+          "initiator_faction_id and opponent_faction_id are required",
+      });
+    }
 
-    const result = await db.pool.query(
-      `INSERT INTO ${TABLE_NAME} (${columns}) VALUES (${placeholders})`,
-      values
+    if (campaign_id !== null && !Number.isInteger(campaign_id)) {
+      return res.status(400).json({
+        message: "campaign_id must be an integer or null",
+      });
+    }
+
+    if (typeof fight_name !== "string" || fight_name.trim().length === 0) {
+      return res.status(400).json({
+        message: "fight_name must be a non-empty string",
+      });
+    }
+
+    // ---------------------------------------------------------
+    // Transaction
+    // ---------------------------------------------------------
+
+    connection = await db.pool.getConnection();
+
+    await connection.beginTransaction();
+
+    // ---------------------------------------------------------
+    // Create fight
+    // ---------------------------------------------------------
+
+    const [fightResult] = await connection.query(
+      `
+        INSERT INTO aux_fights (
+          fight_name,
+          confirmed,
+          campaign_id,
+          winnerfaction_id
+        )
+        VALUES (?, 0, ?, NULL)
+      `,
+      [fight_name.trim(), campaign_id]
     );
 
-    logger.info("Auxfight record created from ip: " + ip);
+    const fightId = fightResult.insertId;
 
-    res.status(201).json(serializeInsertResult(result));
+    // ---------------------------------------------------------
+    // Add initiator
+    // ---------------------------------------------------------
+
+    await connection.query(
+      `
+        INSERT INTO aux_fightusers (
+          fight_id,
+          user_id,
+          faction_id,
+          fightcreator
+        )
+        VALUES (?, ?, ?, 1)
+      `,
+      [fightId, initiator_user_id, initiator_faction_id]
+    );
+
+    // ---------------------------------------------------------
+    // Add opponent
+    // ---------------------------------------------------------
+
+    await connection.query(
+      `
+        INSERT INTO aux_fightusers (
+          fight_id,
+          user_id,
+          faction_id,
+          fightcreator
+        )
+        VALUES (?, ?, ?, 0)
+      `,
+      [fightId, opponent_user_id, opponent_faction_id]
+    );
+
+    // ---------------------------------------------------------
+    // Commit
+    // ---------------------------------------------------------
+
+    await connection.commit();
+
+    logger.info(
+      `Auxfight ${fightId} created from ip: ${ip}. ` +
+        `Initiator: ${initiator_user_id}, ` +
+        `Opponent: ${opponent_user_id}`
+    );
+
+    return res.status(201).json({
+      id_fight: fightId.toString(),
+      fight_name: fight_name.trim(),
+      confirmed: false,
+      campaign_id,
+      winnerfaction_id: null,
+      users: [
+        {
+          user_id: initiator_user_id,
+          faction_id: initiator_faction_id,
+          fightcreator: true,
+        },
+        {
+          user_id: opponent_user_id,
+          faction_id: opponent_faction_id,
+          fightcreator: false,
+        },
+      ],
+    });
   } catch (err) {
-    logger.error("Failed to create auxfight record: " + err.message);
-    res.status(500).json({ message: "Server error" });
+    if (connection) {
+      try {
+        await connection.rollback();
+      } catch (rollbackError) {
+        logger.error(
+          "Failed to rollback auxfight transaction: " +
+            rollbackError.message
+        );
+      }
+    }
+
+    logger.error("Failed to create auxfight: " + err.message);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
+  } finally {
+    if (connection) {
+      connection.release();
+    }
   }
 });
 
