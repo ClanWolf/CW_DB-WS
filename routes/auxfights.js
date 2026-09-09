@@ -56,7 +56,7 @@ router.get("/:id", async (req, res) => {
       : res.sendStatus(404);
   } catch (err) {
     logger.error("Failed to load auxfight record: " + err.message);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: err.message });
   }
 });
 
