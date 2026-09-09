@@ -136,10 +136,9 @@ router.post("/", async (req, res) => {
           confirmed,
           capmaign_id,
           c3_attack_id,
-          winnerfaction_id,
-          granted_support_points
+          winnerfaction_id
         )
-        VALUES (?, 0, ?, NULL, NULL, NULL)
+        VALUES (?, 0, ?, NULL, NULL)
       `,
       [fight_name.trim(), campaign_id]
     );
