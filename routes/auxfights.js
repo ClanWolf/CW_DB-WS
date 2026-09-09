@@ -24,6 +24,11 @@ async function getWritableColumns() {
 }
 
 router.get("/", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary fights']
+    #swagger.summary = 'List auxiliary fights'
+    #swagger.responses[200] = { description: 'Auxiliary fights', schema: { $ref: '#/definitions/AuxFightList' } }
+  */
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
   try {
@@ -39,6 +44,15 @@ router.get("/", async (req, res) => {
 });
 
 router.get("/:id", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary fights']
+    #swagger.summary = 'Get a fight visible to a user'
+    #swagger.description = 'Returns a fight for the supplied user ID only when it is unconfirmed or has a winner faction.'
+    #swagger.parameters['id'] = { description: 'User ID', required: true, type: 'integer' }
+    #swagger.responses[200] = { description: 'Visible auxiliary fight', schema: { $ref: '#/definitions/AuxFight' } }
+    #swagger.responses[404] = { description: 'No visible fight for this user' }
+    #swagger.responses[500] = { description: 'Database error', schema: { $ref: '#/definitions/Error' } }
+  */
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
   try {
@@ -61,6 +75,14 @@ router.get("/:id", async (req, res) => {
 });
 
 router.post("/", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary fights']
+    #swagger.summary = 'Create an auxiliary fight for two users'
+    #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateAuxFightRequest' } }
+    #swagger.responses[201] = { description: 'Auxiliary fight created', schema: { $ref: '#/definitions/CreatedAuxFight' } }
+    #swagger.responses[400] = { description: 'Validation error', schema: { $ref: '#/definitions/Error' } }
+    #swagger.responses[500] = { description: 'Database error', schema: { $ref: '#/definitions/Error' } }
+  */
   const ip =
     req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
@@ -235,6 +257,14 @@ router.post("/", async (req, res) => {
 });
 
 router.patch("/:id/cancel", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary fights']
+    #swagger.summary = 'Cancel an auxiliary fight'
+    #swagger.parameters['id'] = { description: 'Fight ID', required: true, type: 'integer' }
+    #swagger.responses[200] = { description: 'Cancelled fight', schema: { $ref: '#/definitions/CancelledAuxFight' } }
+    #swagger.responses[404] = { description: 'Fight not found', schema: { $ref: '#/definitions/Error' } }
+    #swagger.responses[500] = { description: 'Database error', schema: { $ref: '#/definitions/Error' } }
+  */
   const ip =
     req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
@@ -280,6 +310,16 @@ router.patch("/:id/cancel", async (req, res) => {
 });
 
 router.patch("/:id/confirmed", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary fights']
+    #swagger.summary = 'Set auxiliary-fight confirmation status'
+    #swagger.parameters['id'] = { description: 'Fight ID', required: true, type: 'integer' }
+    #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/ConfirmationUpdateRequest' } }
+    #swagger.responses[200] = { description: 'Updated confirmation status', schema: { $ref: '#/definitions/ConfirmationUpdate' } }
+    #swagger.responses[400] = { description: 'Invalid confirmation status', schema: { $ref: '#/definitions/Error' } }
+    #swagger.responses[404] = { description: 'Fight not found', schema: { $ref: '#/definitions/Error' } }
+    #swagger.responses[500] = { description: 'Database error', schema: { $ref: '#/definitions/Error' } }
+  */
   const ip =
     req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
@@ -328,6 +368,16 @@ router.patch("/:id/confirmed", async (req, res) => {
 });
 
 router.patch("/:id/winner", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary fights']
+    #swagger.summary = 'Set the winning faction of an auxiliary fight'
+    #swagger.parameters['id'] = { description: 'Fight ID', required: true, type: 'integer' }
+    #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/WinnerUpdateRequest' } }
+    #swagger.responses[200] = { description: 'Updated winning faction', schema: { $ref: '#/definitions/WinnerUpdate' } }
+    #swagger.responses[400] = { description: 'Invalid winner faction', schema: { $ref: '#/definitions/Error' } }
+    #swagger.responses[404] = { description: 'Fight not found', schema: { $ref: '#/definitions/Error' } }
+    #swagger.responses[500] = { description: 'Database error', schema: { $ref: '#/definitions/Error' } }
+  */
   const ip =
     req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 

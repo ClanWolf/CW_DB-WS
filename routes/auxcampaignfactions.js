@@ -24,6 +24,11 @@ async function getWritableColumns() {
 }
 
 router.get("/", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary campaign factions']
+    #swagger.summary = 'List auxiliary campaign factions'
+    #swagger.responses[200] = { description: 'Auxiliary campaign factions', schema: { $ref: '#/definitions/AuxCampaignFactionList' } }
+  */
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
   try {
@@ -40,6 +45,13 @@ router.get("/", async (req, res) => {
 
 // seletiert alle factions anhand der campaign id
 router.get("/:id", async (req, res) => {
+  /*
+    #swagger.tags = ['Auxiliary campaign factions']
+    #swagger.summary = 'List factions assigned to a campaign'
+    #swagger.parameters['id'] = { description: 'Campaign ID', required: true, type: 'integer' }
+    #swagger.responses[200] = { description: 'Factions assigned to the campaign', schema: { $ref: '#/definitions/AuxCampaignFactionList' } }
+    #swagger.responses[404] = { description: 'No factions assigned to the campaign' }
+  */
   const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress || null;
 
   try {

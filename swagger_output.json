@@ -313,6 +313,10 @@
     },
     "/auxcampaignfactions/": {
       "get": {
+        "tags": [
+          "Auxiliary campaign factions"
+        ],
+        "summary": "List auxiliary campaign factions",
         "description": "",
         "parameters": [
           {
@@ -323,7 +327,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Auxiliary campaign factions",
+            "schema": {
+              "$ref": "#/definitions/AuxCampaignFactionList"
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -354,13 +361,18 @@
     },
     "/auxcampaignfactions/{id}": {
       "get": {
+        "tags": [
+          "Auxiliary campaign factions"
+        ],
+        "summary": "List factions assigned to a campaign",
         "description": "",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "Campaign ID"
           },
           {
             "name": "x-forwarded-for",
@@ -370,10 +382,13 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Factions assigned to the campaign",
+            "schema": {
+              "$ref": "#/definitions/AuxCampaignFactionList"
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "No factions assigned to the campaign"
           },
           "500": {
             "description": "Internal Server Error"
@@ -383,6 +398,10 @@
     },
     "/auxfights/": {
       "get": {
+        "tags": [
+          "Auxiliary fights"
+        ],
+        "summary": "List auxiliary fights",
         "description": "",
         "parameters": [
           {
@@ -393,7 +412,10 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Auxiliary fights",
+            "schema": {
+              "$ref": "#/definitions/AuxFightList"
+            }
           },
           "500": {
             "description": "Internal Server Error"
@@ -401,36 +423,62 @@
         }
       },
       "post": {
+        "tags": [
+          "Auxiliary fights"
+        ],
+        "summary": "Create an auxiliary fight for two users",
         "description": "",
         "parameters": [
           {
             "name": "x-forwarded-for",
             "in": "header",
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/CreateAuxFightRequest"
+            }
           }
         ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Auxiliary fight created",
+            "schema": {
+              "$ref": "#/definitions/CreatedAuxFight"
+            }
           },
           "400": {
-            "description": "Bad Request"
+            "description": "Validation error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Database error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
     },
     "/auxfights/{id}": {
       "get": {
-        "description": "",
+        "tags": [
+          "Auxiliary fights"
+        ],
+        "summary": "Get a fight visible to a user",
+        "description": "Returns a fight for the supplied user ID only when it is unconfirmed or has a winner faction.",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "integer",
+            "description": "User ID"
           },
           {
             "name": "x-forwarded-for",
@@ -440,13 +488,176 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "Visible auxiliary fight",
+            "schema": {
+              "$ref": "#/definitions/AuxFight"
+            }
           },
           "404": {
-            "description": "Not Found"
+            "description": "No visible fight for this user"
           },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Database error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/auxfights/{id}/cancel": {
+      "patch": {
+        "tags": [
+          "Auxiliary fights"
+        ],
+        "summary": "Cancel an auxiliary fight",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Fight ID"
+          },
+          {
+            "name": "x-forwarded-for",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Cancelled fight",
+            "schema": {
+              "$ref": "#/definitions/CancelledAuxFight"
+            }
+          },
+          "404": {
+            "description": "Fight not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Database error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/auxfights/{id}/confirmed": {
+      "patch": {
+        "tags": [
+          "Auxiliary fights"
+        ],
+        "summary": "Set auxiliary-fight confirmation status",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Fight ID"
+          },
+          {
+            "name": "x-forwarded-for",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ConfirmationUpdateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated confirmation status",
+            "schema": {
+              "$ref": "#/definitions/ConfirmationUpdate"
+            }
+          },
+          "400": {
+            "description": "Invalid confirmation status",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Fight not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Database error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          }
+        }
+      }
+    },
+    "/auxfights/{id}/winner": {
+      "patch": {
+        "tags": [
+          "Auxiliary fights"
+        ],
+        "summary": "Set the winning faction of an auxiliary fight",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "description": "Fight ID"
+          },
+          {
+            "name": "x-forwarded-for",
+            "in": "header",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/WinnerUpdateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated winning faction",
+            "schema": {
+              "$ref": "#/definitions/WinnerUpdate"
+            }
+          },
+          "400": {
+            "description": "Invalid winner faction",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "404": {
+            "description": "Fight not found",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
+          },
+          "500": {
+            "description": "Database error",
+            "schema": {
+              "$ref": "#/definitions/Error"
+            }
           }
         }
       }
@@ -587,6 +798,833 @@
           },
           "500": {
             "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AuxFight": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "id_fight": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "42"
+                }
+              }
+            },
+            "fight_name": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "Battle of Tukayyid"
+                }
+              }
+            },
+            "confirmed": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    0,
+                    1
+                  ],
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "example": {
+                  "type": "number",
+                  "example": 0
+                }
+              }
+            },
+            "campaign_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "nullable": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "example": {
+                  "type": "number",
+                  "example": 7
+                }
+              }
+            },
+            "c3_attack_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "nullable": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "example": {
+                  "type": "number",
+                  "example": 15
+                }
+              }
+            },
+            "winnerfaction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "nullable": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "example": {
+                  "type": "number",
+                  "example": 3
+                }
+              }
+            },
+            "fightcreator": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            },
+            "updated": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "2026-09-09T12:00:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AuxFightList": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "array"
+        },
+        "items": {
+          "$ref": "#/definitions/AuxFight"
+        }
+      }
+    },
+    "CreateAuxFightRequest": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "initiator_user_id",
+            "initiator_faction_id",
+            "opponent_user_id",
+            "opponent_faction_id"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "initiator_user_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 101
+                }
+              }
+            },
+            "initiator_faction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            },
+            "opponent_user_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 202
+                }
+              }
+            },
+            "opponent_faction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 2
+                }
+              }
+            },
+            "campaign_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "nullable": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "example": {
+                  "type": "number",
+                  "example": 7
+                }
+              }
+            },
+            "fight_name": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "Battle of Tukayyid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "CreatedAuxFight": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "id_fight": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "42"
+                }
+              }
+            },
+            "fight_name": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "Battle of Tukayyid"
+                }
+              }
+            },
+            "confirmed": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "example": {
+                  "type": "boolean",
+                  "example": false
+                }
+              }
+            },
+            "campaign_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "nullable": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "example": {
+                  "type": "number",
+                  "example": 7
+                }
+              }
+            },
+            "winnerfaction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "nullable": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "example": {}
+              }
+            },
+            "users": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "array"
+                },
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "example": "object"
+                    },
+                    "properties": {
+                      "type": "object",
+                      "properties": {
+                        "user_id": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "integer"
+                            },
+                            "example": {
+                              "type": "number",
+                              "example": 101
+                            }
+                          }
+                        },
+                        "faction_id": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "integer"
+                            },
+                            "example": {
+                              "type": "number",
+                              "example": 1
+                            }
+                          }
+                        },
+                        "fightcreator": {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "example": "boolean"
+                            },
+                            "example": {
+                              "type": "boolean",
+                              "example": true
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "CancelledAuxFight": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "id_fight": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "42"
+                }
+              }
+            },
+            "winnerfaction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": -1
+                }
+              }
+            },
+            "confirmed": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            },
+            "cancelled": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "boolean"
+                },
+                "example": {
+                  "type": "boolean",
+                  "example": true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ConfirmationUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "confirmed"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "confirmed": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    0,
+                    1
+                  ],
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "ConfirmationUpdate": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "id_fight": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "42"
+                }
+              }
+            },
+            "confirmed": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "enum": {
+                  "type": "array",
+                  "example": [
+                    0,
+                    1
+                  ],
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                "example": {
+                  "type": "number",
+                  "example": 1
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "WinnerUpdateRequest": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "winnerfaction_id"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "winnerfaction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "WinnerUpdate": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "id_fight": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "42"
+                }
+              }
+            },
+            "winnerfaction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 3
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AuxCampaignFaction": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "id_campaignfaction": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 12
+                }
+              }
+            },
+            "campaign_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 7
+                }
+              }
+            },
+            "faction_id": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "integer"
+                },
+                "example": {
+                  "type": "number",
+                  "example": 3
+                }
+              }
+            },
+            "metaData": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "object"
+                },
+                "properties": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "object"
+                        },
+                        "properties": {
+                          "type": "object",
+                          "properties": {
+                            "de": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "example": {
+                                  "type": "string",
+                                  "example": "Clan Wolf"
+                                }
+                              }
+                            },
+                            "en": {
+                              "type": "object",
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "example": "string"
+                                },
+                                "example": {
+                                  "type": "string",
+                                  "example": "Clan Wolf"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "logo": {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "example": "string"
+                        },
+                        "example": {
+                          "type": "string",
+                          "example": "clan-wolf.png"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "updated": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "2026-09-09T12:00:00.000Z"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "AuxCampaignFactionList": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "array"
+        },
+        "items": {
+          "$ref": "#/definitions/AuxCampaignFaction"
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "example": "object"
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "message"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "properties": {
+          "type": "object",
+          "properties": {
+            "message": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "example": "string"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "Auxfight not found"
+                }
+              }
+            }
           }
         }
       }

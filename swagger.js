@@ -14,6 +14,127 @@ const doc = {
   host: 'dg.clanwolf.net',
   schemes: 'https',
   basePath: '/',
+  definitions: {
+    AuxFight: {
+      type: 'object',
+      properties: {
+        id_fight: { type: 'string', example: '42' },
+        fight_name: { type: 'string', example: 'Battle of Tukayyid' },
+        confirmed: { type: 'integer', enum: [0, 1], example: 0 },
+        campaign_id: { type: 'integer', nullable: true, example: 7 },
+        c3_attack_id: { type: 'integer', nullable: true, example: 15 },
+        winnerfaction_id: { type: 'integer', nullable: true, example: 3 },
+        fightcreator: { type: 'integer', example: 1 },
+        updated: { type: 'string', example: '2026-09-09T12:00:00.000Z' },
+      },
+    },
+    AuxFightList: {
+      type: 'array',
+      items: { $ref: '#/definitions/AuxFight' },
+    },
+    CreateAuxFightRequest: {
+      type: 'object',
+      required: [
+        'initiator_user_id',
+        'initiator_faction_id',
+        'opponent_user_id',
+        'opponent_faction_id',
+      ],
+      properties: {
+        initiator_user_id: { type: 'integer', example: 101 },
+        initiator_faction_id: { type: 'integer', example: 1 },
+        opponent_user_id: { type: 'integer', example: 202 },
+        opponent_faction_id: { type: 'integer', example: 2 },
+        campaign_id: { type: 'integer', nullable: true, example: 7 },
+        fight_name: { type: 'string', example: 'Battle of Tukayyid' },
+      },
+    },
+    CreatedAuxFight: {
+      type: 'object',
+      properties: {
+        id_fight: { type: 'string', example: '42' },
+        fight_name: { type: 'string', example: 'Battle of Tukayyid' },
+        confirmed: { type: 'boolean', example: false },
+        campaign_id: { type: 'integer', nullable: true, example: 7 },
+        winnerfaction_id: { type: 'integer', nullable: true, example: null },
+        users: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              user_id: { type: 'integer', example: 101 },
+              faction_id: { type: 'integer', example: 1 },
+              fightcreator: { type: 'boolean', example: true },
+            },
+          },
+        },
+      },
+    },
+    CancelledAuxFight: {
+      type: 'object',
+      properties: {
+        id_fight: { type: 'string', example: '42' },
+        winnerfaction_id: { type: 'integer', example: -1 },
+        confirmed: { type: 'integer', example: 1 },
+        cancelled: { type: 'boolean', example: true },
+      },
+    },
+    ConfirmationUpdateRequest: {
+      type: 'object',
+      required: ['confirmed'],
+      properties: { confirmed: { type: 'integer', enum: [0, 1], example: 1 } },
+    },
+    ConfirmationUpdate: {
+      type: 'object',
+      properties: {
+        id_fight: { type: 'string', example: '42' },
+        confirmed: { type: 'integer', enum: [0, 1], example: 1 },
+      },
+    },
+    WinnerUpdateRequest: {
+      type: 'object',
+      required: ['winnerfaction_id'],
+      properties: { winnerfaction_id: { type: 'integer', example: 3 } },
+    },
+    WinnerUpdate: {
+      type: 'object',
+      properties: {
+        id_fight: { type: 'string', example: '42' },
+        winnerfaction_id: { type: 'integer', example: 3 },
+      },
+    },
+    AuxCampaignFaction: {
+      type: 'object',
+      properties: {
+        id_campaignfaction: { type: 'integer', example: 12 },
+        campaign_id: { type: 'integer', example: 7 },
+        faction_id: { type: 'integer', example: 3 },
+        metaData: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'object',
+              properties: {
+                de: { type: 'string', example: 'Clan Wolf' },
+                en: { type: 'string', example: 'Clan Wolf' },
+              },
+            },
+            logo: { type: 'string', example: 'clan-wolf.png' },
+          },
+        },
+        updated: { type: 'string', example: '2026-09-09T12:00:00.000Z' },
+      },
+    },
+    AuxCampaignFactionList: {
+      type: 'array',
+      items: { $ref: '#/definitions/AuxCampaignFaction' },
+    },
+    Error: {
+      type: 'object',
+      required: ['message'],
+      properties: { message: { type: 'string', example: 'Auxfight not found' } },
+    },
+  },
 };
 
 swaggerAutogen(outputFile, endpointsFiles, doc).then((r) => console.log(r));
